@@ -30,7 +30,7 @@ from sklearn.decomposition import PCA
 import sklearn
 from scipy import interpolate
 import datetime
-import mxnet as mx
+#import mxnet as mx
 
 
 def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame, nrof_folds=10, pca=0):
@@ -74,7 +74,7 @@ def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame, nrof_fold
         for threshold_idx, threshold in enumerate(thresholds):
             _, _, acc_train[threshold_idx] = calculate_accuracy(threshold, dist[train_set], actual_issame[train_set])
         best_threshold_index = np.argmax(acc_train)
-        print('best_threshold_index', best_threshold_index, acc_train[best_threshold_index])
+        # print('best_threshold_index', best_threshold_index, acc_train[best_threshold_index])
         for threshold_idx, threshold in enumerate(thresholds):
             tprs[fold_idx, threshold_idx], fprs[fold_idx, threshold_idx], _ = calculate_accuracy(threshold,
                                                                                                  dist[test_set],
@@ -235,16 +235,17 @@ def test(data_set, sess, embedding_tensor, batch_size, label_shape=None, feed_di
     print('infer time', time_consumed)
     _, _, accuracy, val, val_std, far = evaluate(embeddings, issame_list, nrof_folds=10)
     acc2, std2 = np.mean(accuracy), np.std(accuracy)
-    return acc1, std1, acc2, std2, _xnorm, embeddings_list
+    return acc1, std1, acc2, std2, _xnorm, embeddings_list, val, val_std, far
 
 
 def ver_test(ver_list, ver_name_list, nbatch, sess, embedding_tensor, batch_size, feed_dict, input_placeholder):
     results = []
     for i in range(len(ver_list)):
-        acc1, std1, acc2, std2, xnorm, embeddings_list = test(data_set=ver_list[i], sess=sess, embedding_tensor=embedding_tensor,
+        acc1, std1, acc2, std2, xnorm, embeddings_list, val, val_std, far = test(data_set=ver_list[i], sess=sess, embedding_tensor=embedding_tensor,
                                                               batch_size=batch_size, feed_dict=feed_dict,
                                                               input_placeholder=input_placeholder)
         print('[%s][%d]XNorm: %f' % (ver_name_list[i], nbatch, xnorm))
         print('[%s][%d]Accuracy-Flip: %1.5f+-%1.5f' % (ver_name_list[i], nbatch, acc2, std2))
-        results.append(acc2)
+        print('[%s][%d]validate rate-Flip: %1.5f+-%1.5f @ %1.5f' % (ver_name_list[i], nbatch, val, val_std, far))
+        results.append([acc2, val])
     return results
