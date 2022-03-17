@@ -3,11 +3,9 @@ import numpy as np
 import pickle
 import argparse
 import os
-import mxnet as mx
 import cv2
 import io
 import PIL.Image
-import mxnet.ndarray as nd
 
 
 def get_parser():
@@ -59,6 +57,8 @@ def load_bin(path, image_size):
 
 
 def mx2tfrecords(imgidx, imgrec, args):
+    import mxnet as mx
+    import mxnet.ndarray as nd
     output_path = os.path.join(args.tfrecords_file_path, 'tran.tfrecords')
     writer = tf.python_io.TFRecordWriter(output_path)
     for i in imgidx:
